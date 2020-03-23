@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  unity-accelerator:
+    build:
+      context: .
+      dockerfile: Dockerfile.yml
+    
+    image: unity-accelerator:v1.0.259
+
+    volumes:
+      - ./volume:/root/.config/unity-accelerator
+    ports:
+      - "10080:10080"
+      - "80:80"

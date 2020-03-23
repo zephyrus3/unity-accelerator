@@ -1,0 +1,25 @@
+FROM alpine:3.11
+
+ARG UNITY_ACCEL_VERSION=v1.0.259+g8c799e5
+ARG UNITY_ACCEL_URL="https://storage.googleapis.com/unity-accelerator-prd/unity-accelerator-${UNITY_ACCEL_VERSION}-linux-x64-installer.run"
+ARG GLIB_VERSION=2.30-r0
+ARG GLIB_APK=glibc-${GLIB_VERSION}.apk
+
+RUN wget -O /etc/apk/keys/sgerrand.rsa.pub https://alpine-pkgs.sgerrand.com/sgerrand.rsa.pub \
+&& wget -O /tmp/${GLIB_APK} https://github.com/sgerrand/alpine-pkg-glibc/releases/download/${GLIB_VERSION}/${GLIB_APK} \
+&& wget -O /tmp/unity-accelerator-linux-installer.run ${UNITY_ACCEL_URL} \
+&& apk --no-cache add ca-certificates /tmp/glibc-${GLIB_VERSION}.apk \
+&& chmod +x /tmp/unity-accelerator-linux-installer.run \
+&& /tmp/unity-accelerator-linux-installer.run \
+ --mode unattended \
+ --enable-collab false \
+&& /tmp/unity-accelerator-linux-installer.run --version \
+&& rm /etc/apk/keys/sgerrand.rsa.pub /tmp/${GLIB_APK} /tmp/unity-accelerator-linux-installer.run \
+&& echo -e "#!/bin/sh \n /opt/Unity/accelerator/unity-accelerator register -persist /root/.config/unity-accelerator adbv2\n" > /opt/start_unity_accelerator.sh \
+&& echo -e "/opt/Unity/accelerator/unity-accelerator run -persist /root/.config/unity-accelerator -log-stdout-also\n" >> /opt/start_unity_accelerator.sh \
+&& chmod +x /opt/start_unity_accelerator.sh 
+
+EXPOSE 10080 80
+
+CMD ["sh", "/opt/start_unity_accelerator.sh"] 
+
